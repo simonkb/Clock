@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+    </qresource>
+    <qresource prefix="/Components">
+        <file>Clock.qml</file>
+        <file>ClockNeedle.qml</file>
+        <file>ClockNumberText.qml</file>
+        <file>NumberRepeater.qml</file>
+        <file>MinutesNumberText.qml</file>
+        <file>NumberRepeaterForMins.qml</file>
+        <file>HourNeedle.qml</file>
+        <file>MinuteNeedle.qml</file>
+        <file>SecondNeedle.qml</file>
+    </qresource>
+</RCC>

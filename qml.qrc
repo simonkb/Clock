@@ -9,8 +9,5 @@
         <file>NumberRepeater.qml</file>
         <file>MinutesNumberText.qml</file>
         <file>NumberRepeaterForMins.qml</file>
-        <file>HourNeedle.qml</file>
-        <file>MinuteNeedle.qml</file>
-        <file>SecondNeedle.qml</file>
     </qresource>
 </RCC>

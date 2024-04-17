@@ -4,10 +4,6 @@ Rectangle {
     id: window
     property color clockBgColor: "white"
     property date time: new Date()
-    property real hourAngle: (time.getHours() % 12 + time.getMinutes() / 60) * 360 / 12
-    property real minuteAngle: (time.getMinutes() + time.getSeconds() / 60) * 360 / 60
-    property real secondAngle: time.getSeconds() * 360 / 60
-
     Rectangle {
         id: clockRoot
         width: 700
@@ -51,6 +47,9 @@ Rectangle {
             repeat: true
             onTriggered: {
                 time.setSeconds(time.getSeconds() + 1);
+                second.angleRotate = time.getSeconds() * 360 / 60;
+                minHand.angleRotate = (time.getMinutes() + time.getSeconds() / 60) * 360 / 60
+                hourHand.angleRotate = (time.getHours() % 12 + time.getMinutes() / 60) * 360 / 12
                 clockRoot.updateTime();
 
             }
@@ -64,30 +63,6 @@ Rectangle {
             }
         }
 
-        // function updateTimeFromAngle(newAngle, handType) {
-        //     var newTime = new Date(time);
-        //     var minuteDifference = 0;
-        //     var newMinutes = 0;
-
-        //     if (handType === "hour") {
-        //         newTime.setHours(newAngle * 12 / 360);
-        //         newMinutes = (newAngle % 30) * 2;
-        //         minuteDifference = newMinutes - newTime.getMinutes();
-        //     } else if (handType === "minute") {
-        //         newMinutes = newAngle * 60 / 360;
-        //         minuteDifference = newMinutes - newTime.getMinutes();
-        //     } else if (handType === "second") {
-        //         newTime.setSeconds(newAngle * 60 / 360);
-        //     }
-        //     if (minuteDifference < -30) {
-        //         newTime.setHours((newTime.getHours() + 1) % 12);
-        //     } else if (minuteDifference > 30) {
-        //         newTime.setHours((newTime.getHours() - 1 + 12) % 12);
-        //     }
-        //     newTime.setMinutes(newMinutes);
-        //     window.time = newTime;
-        //     updateTime();
-        // }
         function updateTimeFromAngle(newAngle, handType) {
             var newTime = new Date(time);
             var minuteDifference = 0;
@@ -95,31 +70,20 @@ Rectangle {
 
             if (handType === "hour") {
                 newTime.setHours(newAngle * 12 / 360);
-                // Calculate the new minutes based on the new angle
-                newMinutes = Math.round((newAngle % 30) * 2); // Ensure the new minute value is within the valid range (0 to 59)
-                minuteDifference = newMinutes - newTime.getMinutes();
+                newMinutes = Math.round((newAngle % 30) * 2);
             } else if (handType === "minute") {
-                // Calculate the new minutes directly from the angle
-                newMinutes = Math.round(newAngle * 60 / 360); // Ensure the new minute value is within the valid range (0 to 59)
-                minuteDifference = newMinutes - newTime.getMinutes();
+                newMinutes = Math.round(newAngle * 60 / 360);
             } else if (handType === "second") {
                 newTime.setSeconds(newAngle * 60 / 360);
             }
-
-            // Adjust the hour if necessary based on the minute difference
             if (minuteDifference < -30) {
                 newTime.setHours((newTime.getHours() + 1) % 12);
             } else if (minuteDifference > 30) {
                 newTime.setHours((newTime.getHours() - 1 + 12) % 12);
             }
-
-            // Set the new minutes
             newTime.setMinutes(newMinutes);
-
-            // Update the time property
             window.time = newTime;
-
-            // Update the displayed time
+            clockTimer.restart();
             updateTime();
         }
 
@@ -148,11 +112,19 @@ Rectangle {
             width: 20
             height: clockRoot.height * 0.42
             angleRotate: (time.getMinutes() + time.getSeconds() / 60) * 360 / 60;
+            digitalClock: digitalClock
             onAngleChanged: {
-                hourHand.angleRotate = minHand.angleRotate * 12 / 360;
-                second.angleRotate = minHand.angleRotate * 60 / 360;
-                clockRoot.updateTimeFromAngle(angleRotate, "minute")
-                     }
+
+                var newMinute = Math.round((angleRotate / 360) * 60);
+                var newHour = time.getHours() % 12;
+                var newHourAngle = ((newHour + newMinute / 60) / 12) * 360;
+                hourHand.angleRotate = newHourAngle;
+                var newSecondAngle = (time.getSeconds() / 60) * 360;
+                second.angleRotate = newSecondAngle;
+                clockRoot.updateTimeFromAngle(angleRotate, "minute");
+
+            }
+
         }
         ClockNeedle {
             id: hourHand
@@ -163,11 +135,16 @@ Rectangle {
             width: 40
             height: minHand.height * 0.5 + 30
             angleRotate: (time.getHours() % 12 + time.getMinutes() / 60) * 360 / 12;
+            digitalClock: digitalClock
             onAngleChanged: {
-                minHand.angleRotate = hourHand.angleRotate * 360 / 6;//
-                second.angleRotate = minHand.angleRotate * 60 / 360;
-                clockRoot.updateTimeFromAngle(angleRotate, "hour")
 
+                var newHour = Math.round((angleRotate / 360) * 12) % 12;
+                var newMinute = time.getMinutes();
+                var newMinuteAngle = (newMinute + newHour * 60) / 60 * 360;
+                minHand.angleRotate = newMinuteAngle;
+                var newSecondAngle = (time.getSeconds() / 60) * 360;
+                second.angleRotate = newSecondAngle;
+                clockRoot.updateTimeFromAngle(angleRotate, "hour");
             }
         }
         ClockNeedle {
@@ -181,11 +158,17 @@ Rectangle {
             handColor: "red"
             borderColor: "red"
             angleRotate: time.getSeconds() * 360 / 60;
+            digitalClock: digitalClock
             onAngleChanged: {
-                minHand.angleRotate = second.angleRotate * 360 / 30;//
-                hourHand.angleRotate = minHand.angleRotate * 12 / 360;
-                clockRoot.updateTimeFromAngle(angleRotate, "second")
+
+                var newMinuteAngle = angleRotate / 360 * 60;
+                minHand.angleRotate = newMinuteAngle;
+
+                var newHourAngle = (hourHand.angleRotate / 12) * 360 + (newMinuteAngle / 60) * 30;
+                hourHand.angleRotate = newHourAngle;
+                clockRoot.updateTimeFromAngle(angleRotate, "second");
             }
+
         }
         Rectangle {
             id: digitalClockBackground

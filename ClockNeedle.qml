@@ -9,7 +9,7 @@ Item {
     property real canvasX: -60
     property real canvasY: -25
     property bool dashedLineVisible: true
-
+    property Text digitalClock: None
 
     signal angleChanged(real newAngle)
 

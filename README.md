@@ -1,1 +1,1 @@
-# Clock
+# Analog Clock using Qt QML.
